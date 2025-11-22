@@ -12,10 +12,19 @@ run_tests:
   stage: test
   image: python:3.9-slim
   before_script:
-    - apt-get update
-    - apt-get install -y make
+    - apt-get update && apt-get install -y make gcc python3-dev
+    - python3 -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov
   script:
     - make test
+    - pytest --cov=. --cov-report=xml:coverage.xml
+  artifacts:
+    when: always
+    paths:
+      - coverage.xml
+      - .coverage
+    expire_in: 1 week
 
 sonarcloud_scan:
   stage: sonarqube
@@ -23,6 +32,8 @@ sonarcloud_scan:
     name: sonarsource/sonar-scanner-cli:latest
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  dependencies:
+    - run_tests
   script:
     - sonar-scanner \
         -Dsonar.organization="$SONAR_ORG" \
@@ -30,6 +41,7 @@ sonarcloud_scan:
         -Dsonar.projectName="$SONAR_PROJECT_NAME" \
         -Dsonar.sources=. \
         -Dsonar.python.version=3.9 \
+        -Dsonar.python.coverage.reportPaths=coverage.xml \
         -Dsonar.host.url="https://sonarcloud.io" \
         -Dsonar.login="$SONAR_TOKEN"
   allow_failure: false
@@ -46,7 +58,7 @@ build_image:
     - echo "$REGISTRY_PASS" | docker login -u "$DOCKER_USER" --password-stdin
     - docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
     - docker push "$IMAGE_NAME:$IMAGE_TAG"
-    - docker logout
+    - docker.logout
 
 deploy:
   stage: deploy
