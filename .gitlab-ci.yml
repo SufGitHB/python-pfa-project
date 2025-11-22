@@ -15,7 +15,7 @@ run_tests:
     - apt-get update && apt-get install -y make gcc python3-dev
     - python3 -m pip install --upgrade pip
     - pip install -r src/requirements.txt
-    - pip install pytest pytest-cov
+    - pip install pytest==7.4.4 pytest-cov==4.1.0
   script:
     - make test
     - pytest --cov=. --cov-report=xml:coverage.xml
