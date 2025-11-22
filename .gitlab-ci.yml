@@ -28,22 +28,22 @@ run_tests:
 
 sonarcloud_scan:
   stage: sonarqube
-  image:
-    name: sonarsource/sonar-scanner-cli:latest
+  image: sonarsource/sonar-scanner-cli:latest
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   dependencies:
     - run_tests
   script:
-    - sonar-scanner \
-        -Dsonar.organization="$SONAR_ORG" \
-        -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
-        -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-        -Dsonar.sources=. \
+    - |
+      sonar-scanner \
+        -Dsonar.organization="${SONAR_ORG}" \
+        -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+        -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+        -Dsonar.sources="." \
         -Dsonar.python.version=3.9 \
-        -Dsonar.python.coverage.reportPaths=coverage.xml \
+        -Dsonar.python.coverage.reportPaths="coverage.xml" \
         -Dsonar.host.url="https://sonarcloud.io" \
-        -Dsonar.login="$SONAR_TOKEN"
+        -Dsonar.login="${SONAR_TOKEN}"
   allow_failure: false
 
 build_image:
@@ -58,7 +58,7 @@ build_image:
     - echo "$REGISTRY_PASS" | docker login -u "$DOCKER_USER" --password-stdin
     - docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
     - docker push "$IMAGE_NAME:$IMAGE_TAG"
-    - docker.logout
+    - docker logout
 
 deploy:
   stage: deploy
