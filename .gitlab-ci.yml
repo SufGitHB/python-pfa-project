@@ -6,7 +6,7 @@ stages:
 
 variables:
   IMAGE_NAME: "soufiane474/pfa-project"
-  IMAGE_TAG: "1.2"
+  IMAGE_TAG: "${CI_COMMIT_TAG}"
 
 run_tests:
   stage: test
