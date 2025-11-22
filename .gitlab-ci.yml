@@ -1,5 +1,6 @@
 stages:
   - test
+  - sonarqube
   - build
   - deploy
 
@@ -15,6 +16,23 @@ run_tests:
     - apt-get install -y make
   script:
     - make test
+
+sonarcloud_scan:
+  stage: sonarqube
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  script:
+    - sonar-scanner \
+        -Dsonar.organization="$SONAR_ORG" \
+        -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+        -Dsonar.projectName="$SONAR_PROJECT_NAME" \
+        -Dsonar.sources=. \
+        -Dsonar.python.version=3.9 \
+        -Dsonar.host.url="https://sonarcloud.io" \
+        -Dsonar.login="$SONAR_TOKEN"
+  allow_failure: false
 
 build_image:
   stage: build
@@ -33,20 +51,15 @@ build_image:
 deploy:
   stage: deploy
   image: alpine:3.20
-
   before_script:
     - apk add --no-cache openssh-client sshpass docker-cli
-
   script: |
     sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no cloud_user@18.175.172.248 "
       DOCKER_USER=$DOCKER_USER REGISTRY_PASS=$REGISTRY_PASS IMAGE_NAME=$IMAGE_NAME IMAGE_TAG=$IMAGE_TAG bash -c '
         echo \"\$REGISTRY_PASS\" | docker login -u \"\$DOCKER_USER\" --password-stdin
-
         docker pull \$IMAGE_NAME:\$IMAGE_TAG
-
         docker stop app || true
         docker rm app || true
-
         docker run -d --name app -p 5000:5000 \$IMAGE_NAME:\$IMAGE_TAG
       '
     "
