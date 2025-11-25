@@ -5,17 +5,15 @@ This is a Python Flask web application providing system information and a real-t
 The app is designed as a cloud-native demo application: simple, lightweight, easy to deploy, and ideal for CI/CD, DevSecOps, containerization, and cloud deployment scenarios such as Azure VM or Kubernetes clusters.
 
 It serves as a practical example for:
-- Docker-based deployments
-- GitLab CI/CD pipelines (tests → quality → build → deploy)
-- SonarCloud static analysis
-- Cloud deployments (Azure VM, container platforms)
-- DevOps & DevSecOps educational demonstrations
+- Docker-based deployments  
+- GitLab CI/CD pipelines (tests → quality → build → deploy)  
+- SonarCloud static analysis  
+- Cloud deployments (Azure VM + Docker)  
+- DevOps & DevSecOps educational demonstrations  
 
 ---
 
 ## Screenshot
-
-Below is the style-aligned screenshot section with a **working URL**, matching the demo-app template:
 
 ![screen](https://user-images.githubusercontent.com/14982936/30533171-db17fccc-9c4f-11e7-8862-eb8c148fedea.png)
 
@@ -25,17 +23,20 @@ Below is the style-aligned screenshot section with a **working URL**, matching t
 
 # Status
 
-You can adapt these badges to your GitLab and SonarCloud projects:
+### 🔄 GitLab CI/CD Pipeline
+![Pipeline](https://gitlab.com/soufiane.mailinfo/python-pfa-project/badges/main/pipeline.svg)
 
-![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp)  
-![](https://img.shields.io/github/release-date/benc-uk/python-demoapp)  
-![](https://img.shields.io/github/v/release/benc-uk/python-demoapp)  
-![](https://img.shields.io/github/commit-activity/y/benc-uk/python-demoapp)
+### 🛡️ SonarCloud Quality Gate
+![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=soufiane-mailinfo_python-pfa-project&metric=alert_status)
 
-Live instances (example):
+### 🌐 Live Deployment (Azure VM)
+This project is deployed on an **Azure Linux Virtual Machine** using Docker.
 
-[![](https://img.shields.io/website?label=Hosted%3A%20Azure%20App%20Service&up_message=online&url=https%3A%2F%2Fpython-demoapp.azurewebsites.net%2F)](https://python-demoapp.azurewebsites.net/)  
-[![](https://img.shields.io/website?label=Hosted%3A%20Kubernetes&up_message=online&url=https%3A%2F%2Fpython-demoapp.kube.benco.io%2F)](https://python-demoapp.kube.benco.io/)
+Access the application (after deployment):
+
+👉 **http://<YOUR-AZURE-PUBLIC-IP>:5000**
+
+Replace `<YOUR-AZURE-PUBLIC-IP>` with the real IP of your VM.
 
 ---
 
@@ -43,11 +44,11 @@ Live instances (example):
 
 ### Pre-reqs
 
-- Linux, WSL or macOS with bash & make
-- [Python 3.9+](https://www.python.org/downloads/) for testing & local execution  
-- [Docker](https://docs.docker.com/get-docker/) for container builds and execution  
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux) for deployment to Azure  
-- Git + Make installed
+- Linux, WSL or macOS with bash & make  
+- [Python 3.9+](https://www.python.org/downloads/)  
+- [Docker](https://docs.docker.com/get-docker/)  
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux)  
+- Git + Make installed  
 
 Clone the project:
 
