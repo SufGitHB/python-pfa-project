@@ -66,7 +66,7 @@ deploy:
   before_script:
     - apk add --no-cache openssh-client sshpass docker-cli
   script: |
-    sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no cloud_user@18.175.172.248 "
+    sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no azureuser@20.115.59.38 "
       DOCKER_USER=$DOCKER_USER REGISTRY_PASS=$REGISTRY_PASS IMAGE_NAME=$IMAGE_NAME IMAGE_TAG=$IMAGE_TAG bash -c '
         echo \"\$REGISTRY_PASS\" | docker login -u \"\$DOCKER_USER\" --password-stdin
         docker pull \$IMAGE_NAME:\$IMAGE_TAG
