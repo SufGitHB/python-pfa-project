@@ -52,4 +52,4 @@ Live instances (example):
 Clone the project:
 
 ```bash
-git clone https://github.com/benc-uk/python-demoapp.git
+git clone https://gitlab.com/soufiane.mailinfo/python-pfa-project.git
