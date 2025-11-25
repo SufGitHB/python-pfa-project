@@ -1,64 +1,55 @@
 # DevSecOps CI/CD – Python Flask Monitoring App
 
-This repository contains the source code and DevSecOps toolchain for a Python Flask web application exposing real-time system metrics (CPU, memory, processes, etc.) through a modern dashboard.
+This is a Python Flask web application providing system information and a real-time monitoring dashboard with CPU, memory, I/O and process metrics.
 
-The goal of this project is not only to ship an application, but to implement a complete production-style CI/CD pipeline with testing, quality analysis, containerization, and automated deployment to Microsoft Azure.
+The app is designed as a cloud-native demo application: simple, lightweight, easy to deploy, and ideal for CI/CD, DevSecOps, containerization, and cloud deployment scenarios such as Azure VM or Kubernetes clusters.
 
-Typical use cases include DevOps/DevSecOps workshops, GitLab CI/CD demonstrations, Docker image builds, SonarCloud analysis, and automated deployment to a Linux virtual machine.
-
----
-
-## 🚀 Project Overview
-
-This project is part of a PFA/PFE focused on:
-
-- Designing and packaging a Flask monitoring app in a reproducible Docker container  
-- Implementing a GitLab CI/CD pipeline with stages:  
-  `test → quality → build → deploy`
-- Integrating SonarCloud for code quality, coverage, and security analysis  
-- Deploying the container on Azure VM (port 5000 exposed)
-
-The repository also includes documentation, Makefile commands, and deployment scripts to ensure repeatability.
+It serves as a practical example for:
+- Docker-based deployments
+- GitLab CI/CD pipelines (tests → quality → build → deploy)
+- SonarCloud static analysis
+- Cloud deployments (Azure VM, container platforms)
+- DevOps & DevSecOps educational demonstrations
 
 ---
 
-## 🧱 Architecture
+## Screenshot
 
-### **Application Layer**
-- Python Flask app exposing system metrics:
-  - CPU usage
-  - Memory usage
-  - Running processes
-- REST/JSON endpoints used by the frontend for auto-refresh
+Below is the style-aligned screenshot section with a **working URL**, matching the demo-app template:
 
-### **DevOps / CI/CD Layer**
-- `.gitlab-ci.yml` defining:
-  - Test stage (pytest + coverage)
-  - SonarCloud analysis
-  - Docker build & push
-  - Automated remote deployment (SSH + Docker Run)
-- Quality gates enforced through SonarCloud
-- Docker image published to a container registry (Docker Hub / GitLab Registry)
+![screen](https://user-images.githubusercontent.com/14982936/30533171-db17fccc-9c4f-11e7-8862-eb8c148fedea.png)
 
-### **Runtime / Infra Layer**
-- Azure Linux VM running Docker
-- Application published on port `5000`
-- Optional compatibility with Kubernetes or container platforms
+> Replace with your real screenshot when ready.
 
 ---
 
-## 📸 Screenshot
+# Status
 
-Here is the dashboard screenshot of the application (real-time CPU/memory gauges + process list):
+You can adapt these badges to your GitLab and SonarCloud projects:
 
-![Application Dashboard](./docs/images/dashboard-example.png)
+![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp)  
+![](https://img.shields.io/github/release-date/benc-uk/python-demoapp)  
+![](https://img.shields.io/github/v/release/benc-uk/python-demoapp)  
+![](https://img.shields.io/github/commit-activity/y/benc-uk/python-demoapp)
 
-> Make sure the image exists under: `docs/images/dashboard-example.png`
+Live instances (example):
+
+[![](https://img.shields.io/website?label=Hosted%3A%20Azure%20App%20Service&up_message=online&url=https%3A%2F%2Fpython-demoapp.azurewebsites.net%2F)](https://python-demoapp.azurewebsites.net/)  
+[![](https://img.shields.io/website?label=Hosted%3A%20Kubernetes&up_message=online&url=https%3A%2F%2Fpython-demoapp.kube.benco.io%2F)](https://python-demoapp.kube.benco.io/)
 
 ---
 
-## 🔖 Status Badges (Example)
+## Building & Running Locally
 
-Adapt these to match your GitLab project and SonarCloud configuration:
+### Pre-reqs
 
-**GitLab pipeline**
+- Linux, WSL or macOS with bash & make
+- [Python 3.9+](https://www.python.org/downloads/) for testing & local execution  
+- [Docker](https://docs.docker.com/get-docker/) for container builds and execution  
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux) for deployment to Azure  
+- Git + Make installed
+
+Clone the project:
+
+```bash
+git clone https://github.com/benc-uk/python-demoapp.git
