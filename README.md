@@ -1,111 +1,90 @@
-# Python Flask - Demo Web Application
+# DevSecOps CI/CD – Python Flask Monitoring App
 
-This is a simple Python Flask web application. The app provides system information and a realtime monitoring screen with dials showing CPU, memory, IO and process information.
+This repository contains the source code and DevSecOps toolchain for a Python Flask web application that exposes real‑time system monitoring (CPU, memory, processes, etc.) via a web dashboard.[web:29][web:31]  
+The goal of this project is not only to deliver an application, but to implement a complete, production‑style CI/CD pipeline with quality analysis, containerization, and automated deployment to Azure.
 
-The app has been designed with cloud native demos & containers in mind, in order to provide a real working application for deployment, something more than "hello-world" but with the minimum of pre-reqs. It is not intended as a complete example of a fully functioning architecture or complex software design.
+Typical uses of this project include demonstrations of DevOps/DevSecOps practices, GitLab CI/CD pipelines, Docker image build and delivery, SonarCloud static analysis, and automated deployment to a Linux virtual machine on Microsoft Azure.[web:26][web:11]
 
-Typical uses would be deployment to Kubernetes, demos of Docker, CI/CD (build pipelines are provided), deployment to cloud (Azure) monitoring, auto-scaling
+---
+
+## Project overview
+
+This project is part of a PFA/PFE focused on:
+
+- Designing and packaging a Flask monitoring application in a reproducible way with Docker.[web:26]  
+- Implementing a GitLab CI/CD pipeline covering tests, quality gates, image build, and deployment stages.  
+- Integrating SonarCloud for code quality, coverage, and security analysis of the Python codebase.[web:9][web:18]  
+- Deploying the resulting container on an Azure Linux virtual machine and exposing the application over HTTP.[web:11][web:14]
+
+The repository also includes documentation, Makefile helpers, and infrastructure scripts to make local development, testing, and deployment repeatable for any contributor.
+
+---
+
+## Architecture
+
+At a high level, the solution is composed of:
+
+- **Application layer**  
+  - Python Flask web app exposing a dashboard with system metrics (CPU, memory, running processes, etc.).[web:26][web:29]  
+  - REST/JSON endpoints consumed by the frontend for periodic refresh.
+
+- **DevOps / CI/CD layer**  
+  - `.gitlab-ci.yml` pipeline with stages: `test` → `sonarqube` → `build` → `deploy`.  
+  - SonarCloud integration for static code analysis, coverage reporting, and quality gates.[web:9][web:18]  
+  - Docker image build and push to a container registry (GitLab Container Registry or Docker Hub).
+
+- **Runtime / Infra layer**  
+  - Azure Linux VM hosting Docker and running the application container on port 5000.[web:11][web:14]  
+  - Optional support for Kubernetes or other container platforms if needed.
+
+---
 
 ## Screenshot
 
-![screen](https://user-images.githubusercontent.com/14982936/30533171-db17fccc-9c4f-11e7-8862-eb8c148fedea.png)
+A typical runtime dashboard shows running processes and real‑time CPU and memory gauges:
 
-# Status
+![screen](./docs/images/dashboard-example.png)
 
-![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp) ![](https://img.shields.io/github/release-date/benc-uk/python-demoapp) ![](https://img.shields.io/github/v/release/benc-uk/python-demoapp) ![](https://img.shields.io/github/commit-activity/y/benc-uk/python-demoapp)
+> Update the image path above (`./docs/images/dashboard-example.png`) with the actual location of your screenshot in this repository.
 
-Live instances:
+---
 
-[![](https://img.shields.io/website?label=Hosted%3A%20Azure%20App%20Service&up_message=online&url=https%3A%2F%2Fpython-demoapp.azurewebsites.net%2F)](https://python-demoapp.azurewebsites.net/)  
-[![](https://img.shields.io/website?label=Hosted%3A%20Kubernetes&up_message=online&url=https%3A%2F%2Fpython-demoapp.kube.benco.io%2F)](https://python-demoapp.kube.benco.io/)
+## Status
 
-## Building & Running Locally
+Example status badges (adapt to your GitLab project and SonarCloud project):
 
-### Pre-reqs
+- GitLab pipeline:  
+  `![GitLab pipeline status](https://gitlab.com/<group>/<project>/badges/main/pipeline.svg)`
+- SonarCloud quality gate:  
+  `![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=<sonar-project-key>&metric=alert_status)`
 
-- Be using Linux, WSL or MacOS, with bash, make etc
-- [Python 3.8+](https://www.python.org/downloads/) - for running locally, linting, running tests etc
-- [Docker](https://docs.docker.com/get-docker/) - for running as a container, or image build and push
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) - for deployment to Azure
+Live instances (if applicable):
 
-Clone the project to any directory where you do development work
+- Azure VM: `http://<public-ip>:5000`
+- Other environments (staging, Kubernetes, etc.) can be added here.
 
-```
-git clone https://github.com/benc-uk/python-demoapp.git
-```
+---
 
-### Makefile
+## Tech stack
 
-A standard GNU Make file is provided to help with running and building locally.
+- **Backend:** Python 3.9+, Flask micro‑framework.[web:26]  
+- **Monitoring libs:** `psutil` for system metrics.  
+- **Packaging:** Docker, Dockerfile in repository root.  
+- **CI/CD:** GitLab CI/CD with `.gitlab-ci.yml`.  
+- **Quality & Security:** SonarCloud (bugs, vulnerabilities, code smells, coverage, duplications).[web:9][web:18]  
+- **Cloud:** Microsoft Azure Linux VM for deployment.[web:11][web:14]
 
-```text
-help                 💬 This help message
-lint                 🔎 Lint & format, will not fix but sets exit code on error
-lint-fix             📜 Lint & format, will try to fix errors and modify code
-image                🔨 Build container image from Dockerfile
-push                 📤 Push container image to registry
-run                  🏃 Run the server locally using Python & Flask
-deploy               🚀 Deploy to Azure Web App
-undeploy             💀 Remove from Azure
-test                 🎯 Unit tests for Flask app
-test-report          🎯 Unit tests for Flask app (with report output)
-test-api             🚦 Run integration API tests, server must be running
-clean                🧹 Clean up project
-```
+---
 
-Make file variables and default values, pass these in when calling `make`, e.g. `make image IMAGE_REPO=blah/foo`
+## Building & running locally
 
-| Makefile Variable | Default                |
-| ----------------- | ---------------------- |
-| IMAGE_REG         | ghcr<span>.</span>io   |
-| IMAGE_REPO        | benc-uk/python-demoapp |
-| IMAGE_TAG         | latest                 |
-| AZURE_RES_GROUP   | temp-demoapps          |
-| AZURE_REGION      | uksouth                |
-| AZURE_SITE_NAME   | pythonapp-{git-sha}    |
+### Prerequisites
 
-The app runs under Flask and listens on port 5000 by default, this can be changed with the `PORT` environmental variable.
+- Linux, WSL ou macOS avec `bash`, `make`, `git`.  
+- Python 3.9+ installé (utilisation locale, linting, tests).[web:26]  
+- Docker pour le build et l’exécution en conteneur.[web:11]  
+- Azure CLI (pour interactions et déploiement vers Azure VM si nécessaire).[web:11][web:14]  
+- Accès à votre projet GitLab (SSH ou HTTPS).
 
-# Containers
+### Cloner le projet
 
-Public container image is [available on GitHub Container Registry](https://github.com/users/benc-uk/packages/container/package/python-demoapp)
-
-Run in a container with:
-
-```bash
-docker run --rm -it -p 5000:5000 ghcr.io/benc-uk/python-demoapp:latest
-```
-
-Should you want to build your own container, use `make image` and the above variables to customise the name & tag.
-
-## Kubernetes
-
-The app can easily be deployed to Kubernetes using Helm, see [deploy/kubernetes/readme.md](deploy/kubernetes/readme.md) for details
-
-# GitHub Actions CI/CD
-
-A working set of CI and CD release GitHub Actions workflows are provided `.github/workflows/`, automated builds are run in GitHub hosted runners
-
-### [GitHub Actions](https://github.com/benc-uk/python-demoapp/actions)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CI%20Build%20App)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CI+Build+App%22)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CD%20Release%20-%20AKS?label=release-kubernetes)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CD+Release+-+AKS%22)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CD%20Release%20-%20Webapp?label=release-azure)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CD+Release+-+Webapp%22)
-
-[![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp)](https://github.com/benc-uk/python-demoapp/commits/master)
-
-## Running in Azure App Service (Linux)
-
-If you want to deploy to an Azure Web App as a container (aka Linux Web App), a Bicep template is provided in the [deploy](deploy/) directory
-
-For a super quick deployment, use `make deploy` which will deploy to a resource group, temp-demoapps and use the git ref to create a unique site name
-
-```bash
-make deploy
-```
-
-## Running in Azure App Service (Windows)
-
-Just don't, it's awful 
