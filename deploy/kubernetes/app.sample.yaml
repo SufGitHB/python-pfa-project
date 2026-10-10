@@ -4,7 +4,7 @@
 #
 
 image:
-  repository: ghcr.io/benc-uk/python-demoapp
+  repository: docker.io/soufiane474/pfa-project
   tag: latest
   pullPolicy: Always
 
