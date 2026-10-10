@@ -1,0 +1,150 @@
+#
+# CI/CD pipeline: tests -> SonarCloud -> build & push image -> deploy to Azure VM
+# (migrated from .gitlab-ci.yml)
+#
+# Required secrets:
+#   SONAR_TOKEN, SONAR_ORG, SONAR_PROJECT_KEY, SONAR_PROJECT_NAME
+#   DOCKER_USER, REGISTRY_PASS
+#   SSH_PASSWORD
+# Optional variables:
+#   DEPLOY_HOST (defaults to the Azure VM IP below)
+#
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: soufiane474/pfa-project
+  IMAGE_TAG: '1.3.0'
+  DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '20.115.59.38' }}
+  DEPLOY_USER: azureuser
+
+jobs:
+  test:
+    name: 'Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: 'Set up Python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: 'Install dependencies'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/requirements.txt
+          pip install pytest==7.4.4 pytest-cov==4.1.0
+
+      - name: 'Run tests with coverage'
+        run: pytest -v --cov=. --cov-report=xml:coverage.xml --junitxml=test-results.xml
+
+      - name: 'Upload test results'
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage.xml
+            test-results.xml
+          retention-days: 7
+
+  sonarcloud:
+    name: 'SonarCloud Scan'
+    needs: test
+    runs-on: ubuntu-latest
+    # Secrets are not available to PRs from forks
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Download coverage report'
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+
+      - name: 'SonarCloud scan'
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_PROJECT_NAME: ${{ secrets.SONAR_PROJECT_NAME }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+
+  build:
+    name: 'Build & Push Image'
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: 'Login to Docker Hub'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.REGISTRY_PASS }}
+
+      - name: 'Build and push'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    name: 'Deploy to Azure VM'
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    environment:
+      name: azure-vm
+      url: http://${{ env.DEPLOY_HOST }}:5000/
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: 'Install sshpass'
+        run: sudo apt-get update -q && sudo apt-get install -y -q sshpass
+
+      - name: 'Deploy container over SSH'
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          REGISTRY_PASS: ${{ secrets.REGISTRY_PASS }}
+        run: |
+          {
+            printf 'export DOCKER_USER=%q REGISTRY_PASS=%q IMAGE_NAME=%q IMAGE_TAG=%q\n' \
+              "$DOCKER_USER" "$REGISTRY_PASS" "$IMAGE_NAME" "$IMAGE_TAG"
+            cat <<'EOF'
+            set -e
+            echo "$REGISTRY_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker pull "$IMAGE_NAME:$IMAGE_TAG"
+            docker stop app || true
+            docker rm app || true
+            docker run -d --name app -p 5000:5000 "$IMAGE_NAME:$IMAGE_TAG"
+            docker logout
+          EOF
+          } | sshpass -e ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" bash -s
+
+      - name: 'Validate site is running'
+        run: bash .github/scripts/url-check.sh -u "http://$DEPLOY_HOST:5000/" -s "Flask" -t 200
